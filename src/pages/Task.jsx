@@ -18,13 +18,22 @@ const Task = () => {
     isError,
     error,
     clearError,
+    clearStore,
   } = useTaskStore();
 
   const { currentUser, logout } = useAuthStore();
 
+  // Fetch tasks on mount and when user changes
   useEffect(() => {
-    fetchTasks();
-  }, []);
+    if (currentUser) {
+      fetchTasks();
+    }
+
+    // Cleanup: clear tasks when user changes or component unmounts
+    return () => {
+      clearStore();
+    };
+  }, [currentUser?.userId]);
 
   useEffect(() => {
     fetchTasks(filters);
@@ -183,8 +192,8 @@ const Task = () => {
                   key={priority.value}
                   onClick={() => handlePriorityFilter(priority.value)}
                   className={`flex-1 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${filters.priority === priority.value
-                      ? `bg-gradient-to-r ${priority.color} text-white shadow-lg transform scale-105`
-                      : "bg-white hover:bg-gray-50 text-gray-700 border border-gray-200"
+                    ? `bg-gradient-to-r ${priority.color} text-white shadow-lg transform scale-105`
+                    : "bg-white hover:bg-gray-50 text-gray-700 border border-gray-200"
                     }`}
                 >
                   {priority.label}
@@ -289,8 +298,8 @@ const Task = () => {
                       <div className="flex-1">
                         <h3
                           className={`text-xl font-bold mb-3 ${task.is_done
-                              ? "line-through text-gray-400"
-                              : "text-gray-800"
+                            ? "line-through text-gray-400"
+                            : "text-gray-800"
                             }`}
                         >
                           {task.title}

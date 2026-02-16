@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { getUserById, loginUser, createUser, updateUser, getMe } from "../services/api/user";
+import useTaskStore from "./taskStore";
 
 const useAuthStore = create(
   persist(
@@ -16,7 +17,7 @@ const useAuthStore = create(
         set({ loading: true, error: null });
         try {
           const response = await loginUser(credentials);
-          
+
           if (!response.success) {
             throw new Error(response.message);
           }
@@ -80,12 +81,12 @@ const useAuthStore = create(
         } catch (err) {
           const errorMessage = err.response?.data?.message || err.message || "Failed to fetch user";
           set({ loading: false, error: errorMessage });
-          
+
           // If unauthorized, clear auth state
           if (err.response?.status === 401) {
             get().logout();
           }
-          
+
           throw errorMessage;
         }
       },
@@ -141,6 +142,10 @@ const useAuthStore = create(
       // Logout
       logout: () => {
         localStorage.removeItem("token");
+
+        // Clear task store to prevent showing previous user's tasks
+        useTaskStore.getState().clearStore();
+
         set({
           currentUser: null,
           token: null,
