@@ -18,13 +18,22 @@ const Task = () => {
     isError,
     error,
     clearError,
+    clearStore,
   } = useTaskStore();
 
   const { currentUser, logout } = useAuthStore();
 
+  // Fetch tasks on mount and when user changes
   useEffect(() => {
-    fetchTasks();
-  }, []);
+    if (currentUser) {
+      fetchTasks();
+    }
+
+    // Cleanup: clear tasks when user changes or component unmounts
+    return () => {
+      clearStore();
+    };
+  }, [currentUser?.userId]);
 
   useEffect(() => {
     fetchTasks(filters);
@@ -97,18 +106,21 @@ const Task = () => {
     }
   };
 
+  const completedCount = tasks.filter((t) => t.is_done).length;
+  const totalCount = tasks.length;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Header with User Info */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 mb-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-2 mb-6">
+          <div className="flex flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
                 {currentUser?.fullName?.charAt(0).toUpperCase() || "U"}
               </div>
               <div>
-                <p className="text-sm text-gray-600">Welcome back,</p>
+
                 <p className="font-bold text-gray-800 text-lg">
                   {currentUser?.fullName || "User"}
                 </p>
@@ -121,7 +133,7 @@ const Task = () => {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
-              Logout
+              <span className="hidden sm:inline ">Logout</span>
             </button>
           </div>
         </div>
@@ -129,10 +141,17 @@ const Task = () => {
         {/* Task Management Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
               Task Management
             </h1>
-            <p className="text-gray-600 mt-1">Organize and track your tasks efficiently</p>
+            <p className="text-gray-600 mt-1">
+              Organize your tasks efficiently
+              {totalCount > 0 && (
+                <span className="ml-2 text-xs font-medium text-slate-400">
+                  — {completedCount}/{totalCount} completed
+                </span>
+              )}
+            </p>
           </div>
           <button
             onClick={() => navigate("entry")}
@@ -183,8 +202,8 @@ const Task = () => {
                   key={priority.value}
                   onClick={() => handlePriorityFilter(priority.value)}
                   className={`flex-1 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${filters.priority === priority.value
-                      ? `bg-gradient-to-r ${priority.color} text-white shadow-lg transform scale-105`
-                      : "bg-white hover:bg-gray-50 text-gray-700 border border-gray-200"
+                    ? `bg-gradient-to-r ${priority.color} text-white shadow-lg transform scale-105`
+                    : "bg-white hover:bg-gray-50 text-gray-700 border border-gray-200"
                     }`}
                 >
                   {priority.label}
@@ -289,8 +308,8 @@ const Task = () => {
                       <div className="flex-1">
                         <h3
                           className={`text-xl font-bold mb-3 ${task.is_done
-                              ? "line-through text-gray-400"
-                              : "text-gray-800"
+                            ? "line-through text-gray-400"
+                            : "text-gray-800"
                             }`}
                         >
                           {task.title}

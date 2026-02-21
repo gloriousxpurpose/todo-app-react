@@ -30,7 +30,7 @@ const useTaskStore = create((set, get) => ({
     set({ isLoading: true, isError: false, error: null });
     try {
       const filters = customFilters || get().filters;
-      
+
       // Remove empty filter values
       const cleanFilters = Object.entries(filters).reduce((acc, [key, value]) => {
         if (value !== "" && value !== null && value !== undefined) {
@@ -42,10 +42,10 @@ const useTaskStore = create((set, get) => ({
       const data = await getAllTasks(cleanFilters);
       set({ tasks: data, isLoading: false });
     } catch (err) {
-      set({ 
-        isLoading: false, 
-        isError: true, 
-        error: err.response?.data?.message || "Failed to fetch tasks" 
+      set({
+        isLoading: false,
+        isError: true,
+        error: err.response?.data?.message || "Failed to fetch tasks"
       });
     }
   },
@@ -58,10 +58,10 @@ const useTaskStore = create((set, get) => ({
       set({ taskDetail: data, isLoading: false });
       return data;
     } catch (err) {
-      set({ 
-        isLoading: false, 
-        isError: true, 
-        error: err.response?.data?.message || "Failed to fetch task" 
+      set({
+        isLoading: false,
+        isError: true,
+        error: err.response?.data?.message || "Failed to fetch task"
       });
       throw err;
     }
@@ -72,16 +72,16 @@ const useTaskStore = create((set, get) => ({
     set({ isLoading: true, isError: false, error: null });
     try {
       const newTask = await createTask(payload);
-      set({ 
+      set({
         tasks: [newTask, ...get().tasks],
-        isLoading: false 
+        isLoading: false
       });
       return newTask;
     } catch (err) {
-      set({ 
-        isLoading: false, 
-        isError: true, 
-        error: err.response?.data?.message || "Failed to create task" 
+      set({
+        isLoading: false,
+        isError: true,
+        error: err.response?.data?.message || "Failed to create task"
       });
       throw err;
     }
@@ -96,17 +96,17 @@ const useTaskStore = create((set, get) => ({
         tasks: get().tasks.map((task) =>
           task.task_id === id ? { ...task, ...updatedTask } : task
         ),
-        taskDetail: get().taskDetail?.task_id === id 
-          ? { ...get().taskDetail, ...updatedTask } 
+        taskDetail: get().taskDetail?.task_id === id
+          ? { ...get().taskDetail, ...updatedTask }
           : get().taskDetail,
         isLoading: false,
       });
       return updatedTask;
     } catch (err) {
-      set({ 
-        isLoading: false, 
-        isError: true, 
-        error: err.response?.data?.message || "Failed to update task" 
+      set({
+        isLoading: false,
+        isError: true,
+        error: err.response?.data?.message || "Failed to update task"
       });
       throw err;
     }
@@ -118,11 +118,11 @@ const useTaskStore = create((set, get) => ({
     set({
       tasks: get().tasks.map((task) =>
         task.task_id === id
-          ? { 
-              ...task, 
-              is_done: payload.is_done,
-              completed_at: payload.is_done ? new Date().toISOString() : null
-            }
+          ? {
+            ...task,
+            is_done: payload.is_done,
+            completed_at: payload.is_done ? new Date().toISOString() : null
+          }
           : task
       ),
     });
@@ -130,7 +130,7 @@ const useTaskStore = create((set, get) => ({
     try {
       const updated = await updateTaskStatus(id, payload);
       const updatedTask = updated.updatedData[0];
-      
+
       // Update with server response
       set({
         tasks: get().tasks.map((task) =>
@@ -156,10 +156,10 @@ const useTaskStore = create((set, get) => ({
         isLoading: false,
       });
     } catch (err) {
-      set({ 
-        isLoading: false, 
-        isError: true, 
-        error: err.response?.data?.message || "Failed to delete task" 
+      set({
+        isLoading: false,
+        isError: true,
+        error: err.response?.data?.message || "Failed to delete task"
       });
       throw err;
     }
@@ -173,6 +173,22 @@ const useTaskStore = create((set, get) => ({
   // Clear error
   clearError: () => {
     set({ isError: false, error: null });
+  },
+
+  // Clear entire store (for logout)
+  clearStore: () => {
+    set({
+      tasks: [],
+      taskDetail: null,
+      isLoading: false,
+      isError: false,
+      error: null,
+      filters: {
+        priority: "",
+        sortOrder: "desc",
+        search: "",
+      },
+    });
   },
 }));
 
